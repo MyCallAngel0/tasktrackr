@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
+import { ThemeProvider } from './context/ThemeContext';
+import AddListModal from './components/AddListModal';
 import ListItem from './components/ListItem';
 import TaskForm from './components/TaskForm';
 import TaskList from './components/TaskList';
+import FilterBar from './components/FilterBar';
+import ThemeToggle from './components/ThemeToggle';
 
 const App = () => {
   const [lists, setLists] = useState(() => {
@@ -9,19 +13,21 @@ const App = () => {
     return savedLists ? JSON.parse(savedLists) : [];
   });
   const [selectedListId, setSelectedListId] = useState(null);
+  const [filter, setFilter] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('lists', JSON.stringify(lists));
   }, [lists]);
 
-  const addList = (name) => {
-    setLists([...lists, { id: Date.now(), name, tasks: [] }]);
+  const addList = (name, dueDate) => {
+    setLists([...lists, { id: Date.now(), name, dueDate, tasks: [] }]);
   };
 
-  const updateList = (id, newName) => {
+  const updateList = (id, newName, newDueDate) => {
     setLists(
       lists.map((list) =>
-        list.id === id ? { ...list, name: newName } : list
+        list.id === id ? { ...list, name: newName, dueDate: newDueDate } : list
       )
     );
   };
@@ -37,13 +43,13 @@ const App = () => {
 
   const addTask = (title) => {
     setLists(
-      lists.map((list) =>
-        list.id === selectedListId
-        ? {
-          ...list,
-          tasks: [...list.tasks, { id: Date.now(), title, completed: false }],
-          }
-        : list
+    lists.map((list) =>
+      list.id === selectedListId
+      ? {
+        ...list,
+        tasks: [...list.tasks, { id: Date.now(), title, completed: false }],
+      }
+      : list
       )
     );
   };
@@ -55,7 +61,7 @@ const App = () => {
         ? {
           ...list,
           tasks: list.tasks.map((task) =>
-          task.id === taskId ? { ...task, title: newTitle } : task
+            task.id === taskId ? { ...task, title: newTitle } : task
           ),
         }
         : list
@@ -83,9 +89,9 @@ const App = () => {
         ? {
           ...list,
           tasks: list.tasks.map((task) =>
-          task.id === taskId
-          ? { ...task, completed: !task.completed }
-          : task
+            task.id === taskId
+            ? { ...task, completed: !task.completed }
+            : task
           ),
         }
         : list
@@ -93,62 +99,83 @@ const App = () => {
     );
   };
 
+  const filteredLists = filter
+  ? lists.filter((list) => {
+    if (!list.dueDate) return false;
+    const dueDate = new Date(list.dueDate);
+    return (
+      dueDate >= new Date(filter.start.setHours(0, 0, 0, 0)) &&
+      dueDate <= new Date(filter.end.setHours(23, 59, 59, 999))
+    );
+  })
+  : lists;
+
   const selectedList = lists.find((list) => list.id === selectedListId);
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">TaskTrackr</h1>
-      <div className="flex flex-col lg:flex-row lg:space-x-8">
-      <div className="w-full lg:w-1/3 mb-8">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const name = e.target.listName.value;
-            if (name.trim()) {
-              addList(name);
-              e.target.reset();
-            }
-          }}
-          className="mb-6">
-          <input
-            type="text"
-            name="listName"
-            placeholder="New List"
-            className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </form>
-        <ul className="space-y-3">
-          {lists.map((list) => (
-            <ListItem
-              key={list.id}
-              list={list}
-              updateList={updateList}
-              deleteList={deleteList}
-              selectList={selectList}
+    <ThemeProvider>
+      <div className="max-w-6xl mx-auto p-4 min-h-screen">
+      <header className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+          TaskTrackr
+        </h1>
+        <ThemeToggle />
+      </header>
+        <div className="flex flex-col lg:flex-row lg:space-x-8">
+          <div className="w-full lg:w-1/3 mb-8">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="btn-primary w-full mb-6"
+            >
+              + New List
+            </button>
+            <AddListModal
+              isOpen={isModalOpen}
+              closeModal={() => setIsModalOpen(false)}
+              addList={addList}
             />
-          ))}
-        </ul>
-      </div>
-        <div className="w-full lg:w-2/3">
-          {selectedList ? (
-            <div>
-              <h2 className="text-2xl font-semibold mb-6">{selectedList.name}</h2>
-              <TaskForm addTask={addTask} />
-              <TaskList
-                tasks={selectedList.tasks}
-                updateTask={updateTask}
-                deleteTask={deleteTask}
-                toggleComplete={toggleComplete}
-              />
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">
-            Select a list to view its tasks.
-            </p>
-          )}
+            <FilterBar setFilter={setFilter} />
+            <ul className="space-y-3">
+              {filteredLists.length ? (
+                filteredLists.map((list) => (
+                  <ListItem
+                    key={list.id}
+                    list={list}
+                    updateList={updateList}
+                    deleteList={deleteList}
+                    selectList={selectList}
+                  />
+                ))
+              ) : (
+                <p className="text-gray-500 text-center py-4">
+                  No lists match the selected filter.
+                </p>
+              )}
+            </ul>
+          </div>
+          <div className="w-full lg:w-2/3">
+            {selectedList ? (
+              <div>
+                <h2 className="text-2xl font-semibold mb-6 text-[var(--text-color)]">
+                  {selectedList.name}
+                </h2>
+                <TaskForm addTask={addTask} />
+                <TaskList
+                  tasks={selectedList.tasks}
+                  updateTask={updateTask}
+                  deleteTask={deleteTask}
+                  toggleComplete={toggleComplete}
+                />
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">
+                Select a list to view its tasks.
+              </p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 };
 
