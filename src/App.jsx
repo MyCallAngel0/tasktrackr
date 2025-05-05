@@ -11,7 +11,6 @@ const App = () => {
   const [lists, setLists] = useState(() => {
     const savedLists = localStorage.getItem('lists');
     const parsedLists = savedLists ? JSON.parse(savedLists) : [];
-    // Add default color to existing lists if missing
     return parsedLists.map((list) => ({
       ...list,
       color: list.color || 'blue',
