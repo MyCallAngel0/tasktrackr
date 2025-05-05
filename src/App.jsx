@@ -10,7 +10,12 @@ import ThemeToggle from './components/ThemeToggle';
 const App = () => {
   const [lists, setLists] = useState(() => {
     const savedLists = localStorage.getItem('lists');
-    return savedLists ? JSON.parse(savedLists) : [];
+    const parsedLists = savedLists ? JSON.parse(savedLists) : [];
+    // Add default color to existing lists if missing
+    return parsedLists.map((list) => ({
+      ...list,
+      color: list.color || 'blue',
+    }));
   });
   const [selectedListId, setSelectedListId] = useState(null);
   const [filter, setFilter] = useState(null);
@@ -20,14 +25,16 @@ const App = () => {
     localStorage.setItem('lists', JSON.stringify(lists));
   }, [lists]);
 
-  const addList = (name, dueDate) => {
-    setLists([...lists, { id: Date.now(), name, dueDate, tasks: [] }]);
+  const addList = (name, dueDate, color) => {
+    setLists([...lists, { id: Date.now(), name, dueDate, color, tasks: [] }]);
   };
 
-  const updateList = (id, newName, newDueDate) => {
+  const updateList = (id, newName, newDueDate, newColor) => {
     setLists(
       lists.map((list) =>
-        list.id === id ? { ...list, name: newName, dueDate: newDueDate } : list
+        list.id === id
+          ? { ...list, name: newName, dueDate: newDueDate, color: newColor }
+          : list
       )
     );
   };
@@ -43,13 +50,13 @@ const App = () => {
 
   const addTask = (title) => {
     setLists(
-    lists.map((list) =>
-      list.id === selectedListId
-      ? {
-        ...list,
-        tasks: [...list.tasks, { id: Date.now(), title, completed: false }],
-      }
-      : list
+      lists.map((list) =>
+        list.id === selectedListId
+          ? {
+              ...list,
+              tasks: [...list.tasks, { id: Date.now(), title, completed: false }],
+            }
+          : list
       )
     );
   };
@@ -58,13 +65,13 @@ const App = () => {
     setLists(
       lists.map((list) =>
         list.id === selectedListId
-        ? {
-          ...list,
-          tasks: list.tasks.map((task) =>
-            task.id === taskId ? { ...task, title: newTitle } : task
-          ),
-        }
-        : list
+          ? {
+              ...list,
+              tasks: list.tasks.map((task) =>
+                task.id === taskId ? { ...task, title: newTitle } : task
+              ),
+            }
+          : list
       )
     );
   };
@@ -73,11 +80,11 @@ const App = () => {
     setLists(
       lists.map((list) =>
         list.id === selectedListId
-        ? {
-          ...list,
-          tasks: list.tasks.filter((task) => task.id !== taskId),
-        }
-        : list
+          ? {
+              ...list,
+              tasks: list.tasks.filter((task) => task.id !== taskId),
+            }
+          : list
       )
     );
   };
@@ -86,43 +93,43 @@ const App = () => {
     setLists(
       lists.map((list) =>
         list.id === selectedListId
-        ? {
-          ...list,
-          tasks: list.tasks.map((task) =>
-            task.id === taskId
-            ? { ...task, completed: !task.completed }
-            : task
-          ),
-        }
-        : list
+          ? {
+              ...list,
+              tasks: list.tasks.map((task) =>
+                task.id === taskId
+                  ? { ...task, completed: !task.completed }
+                  : task
+              ),
+            }
+          : list
       )
     );
   };
 
   const filteredLists = filter
-  ? lists.filter((list) => {
-    if (!list.dueDate) return false;
-    const dueDate = new Date(list.dueDate);
-    return (
-      dueDate >= new Date(filter.start.setHours(0, 0, 0, 0)) &&
-      dueDate <= new Date(filter.end.setHours(23, 59, 59, 999))
-    );
-  })
-  : lists;
+    ? lists.filter((list) => {
+        if (!list.dueDate) return false;
+        const dueDate = new Date(list.dueDate);
+        return (
+          dueDate >= new Date(filter.start.setHours(0, 0, 0, 0)) &&
+          dueDate <= new Date(filter.end.setHours(23, 59, 59, 999))
+        );
+      })
+    : lists;
 
   const selectedList = lists.find((list) => list.id === selectedListId);
 
   return (
     <ThemeProvider>
-      <div className="max-w-6xl mx-auto p-4 min-h-screen">
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
-          TaskTrackr
-        </h1>
-        <ThemeToggle />
-      </header>
+      <div className="max-w-6xl mx-auto p-4 sm:p-6 min-h-screen">
+        <header className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 leading-normal py-1">
+              TaskTrackr
+            </h1>
+          <ThemeToggle />
+        </header>
         <div className="flex flex-col lg:flex-row lg:space-x-8">
-          <div className="w-full lg:w-1/3 mb-8">
+          <div className="w-full lg:w-1/3 mb-8 lg:mb-0">
             <button
               onClick={() => setIsModalOpen(true)}
               className="btn-primary w-full mb-6"
@@ -147,7 +154,7 @@ const App = () => {
                   />
                 ))
               ) : (
-                <p className="text-gray-500 text-center py-4">
+                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
                   No lists match the selected filter.
                 </p>
               )}
@@ -156,7 +163,7 @@ const App = () => {
           <div className="w-full lg:w-2/3">
             {selectedList ? (
               <div>
-                <h2 className="text-2xl font-semibold mb-6 text-[var(--text-color)]">
+                <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-[var(--text-color)]">
                   {selectedList.name}
                 </h2>
                 <TaskForm addTask={addTask} />
@@ -168,7 +175,7 @@ const App = () => {
                 />
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-4">
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4">
                 Select a list to view its tasks.
               </p>
             )}
