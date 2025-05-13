@@ -24,16 +24,14 @@ const App = () => {
     localStorage.setItem('lists', JSON.stringify(lists));
   }, [lists]);
 
-  const addList = (name, dueDate, color) => {
-    setLists([...lists, { id: Date.now(), name, dueDate, color, tasks: [] }]);
+  const addList = (name, color) => {
+    setLists([...lists, { id: Date.now(), name, color, tasks: [] }]);
   };
 
-  const updateList = (id, newName, newDueDate, newColor) => {
+  const updateList = (id, newName, newColor) => {
     setLists(
       lists.map((list) =>
-        list.id === id
-          ? { ...list, name: newName, dueDate: newDueDate, color: newColor }
-          : list
+        list.id === id ? { ...list, name: newName, color: newColor } : list
       )
     );
   };
@@ -47,27 +45,27 @@ const App = () => {
     setSelectedListId(id);
   };
 
-  const addTask = (title) => {
+  const addTask = (title, dueDate) => {
     setLists(
       lists.map((list) =>
         list.id === selectedListId
           ? {
               ...list,
-              tasks: [...list.tasks, { id: Date.now(), title, completed: false }],
+              tasks: [...list.tasks, { id: Date.now(), title, dueDate, completed: false }],
             }
           : list
       )
     );
   };
 
-  const updateTask = (taskId, newTitle) => {
+  const updateTask = (taskId, newTitle, newDueDate) => {
     setLists(
       lists.map((list) =>
         list.id === selectedListId
           ? {
               ...list,
               tasks: list.tasks.map((task) =>
-                task.id === taskId ? { ...task, title: newTitle } : task
+                task.id === taskId ? { ...task, title: newTitle, dueDate: newDueDate } : task
               ),
             }
           : list
@@ -105,30 +103,32 @@ const App = () => {
     );
   };
 
-  const filteredLists = filter
-    ? lists.filter((list) => {
-        if (!list.dueDate) return false;
-        const dueDate = new Date(list.dueDate);
+  const selectedList = lists.find((list) => list.id === selectedListId);
+
+  const filteredTasks = selectedList && filter
+    ? selectedList.tasks.filter((task) => {
+        if (!task.dueDate) return false;
+        const dueDate = new Date(task.dueDate);
         return (
           dueDate >= new Date(filter.start.setHours(0, 0, 0, 0)) &&
           dueDate <= new Date(filter.end.setHours(23, 59, 59, 999))
         );
       })
-    : lists;
-
-  const selectedList = lists.find((list) => list.id === selectedListId);
+    : selectedList?.tasks || [];
 
   return (
     <ThemeProvider>
       <div className="max-w-6xl mx-auto p-4 sm:p-6 min-h-screen">
         <header className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 leading-normal py-1">
+          <div className="flex items-center space-x-3">
+            <h1 className="text-3xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 header-title">
               TaskTrackr
             </h1>
+          </div>
           <ThemeToggle />
         </header>
         <div className="flex flex-col lg:flex-row lg:space-x-8">
-          <div className="w-full lg:w-1/3 mb-8 lg:mb-0">
+          <div className="w-full lg:w-1/3 mb-8">
             <button
               onClick={() => setIsModalOpen(true)}
               className="btn-primary w-full mb-6"
@@ -142,8 +142,8 @@ const App = () => {
             />
             <FilterBar setFilter={setFilter} />
             <ul className="space-y-3">
-              {filteredLists.length ? (
-                filteredLists.map((list) => (
+              {lists.length ? (
+                lists.map((list) => (
                   <ListItem
                     key={list.id}
                     list={list}
@@ -154,7 +154,7 @@ const App = () => {
                 ))
               ) : (
                 <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                  No lists match the selected filter.
+                  No lists available. Add a new list!
                 </p>
               )}
             </ul>
@@ -167,11 +167,16 @@ const App = () => {
                 </h2>
                 <TaskForm addTask={addTask} />
                 <TaskList
-                  tasks={selectedList.tasks}
+                  tasks={filteredTasks}
                   updateTask={updateTask}
                   deleteTask={deleteTask}
                   toggleComplete={toggleComplete}
                 />
+                {filteredTasks.length === 0 && filter && (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                    No tasks match the selected filter.
+                  </p>
+                )}
               </div>
             ) : (
               <p className="text-gray-500 dark:text-gray-400 text-center py-4">

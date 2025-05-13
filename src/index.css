@@ -123,3 +123,10 @@ body {
 .animate-scale-up {
   animation: scale-up 0.2s ease-out;
 }
+
+.header-title {
+  line-height: 1.2;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  display: inline-block;
+}

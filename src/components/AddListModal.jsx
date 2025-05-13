@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 
 const AddListModal = ({ isOpen, closeModal, addList }) => {
   const [name, setName] = useState('');
-  const [dueDate, setDueDate] = useState('');
-  const [color, setColor] = useState('blue'); // Default color
+  const [color, setColor] = useState('blue');
   const modalRef = useRef(null);
   const nameInputRef = useRef(null);
 
@@ -34,9 +33,8 @@ const AddListModal = ({ isOpen, closeModal, addList }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (name.trim()) {
-      addList(name, dueDate, color);
+      addList(name, color);
       setName('');
-      setDueDate('');
       setColor('blue');
       closeModal();
     }
@@ -54,7 +52,7 @@ const AddListModal = ({ isOpen, closeModal, addList }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       onClick={handleClickOutside}
     >
       <div
@@ -70,16 +68,9 @@ const AddListModal = ({ isOpen, closeModal, addList }) => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="List Name"
-            className="w-full p-3 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200"
+            className="w-full p-3 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-blue-500"
             ref={nameInputRef}
             aria-label="List name"
-          />
-          <input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="w-full p-3 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200"
-            aria-label="Due date"
           />
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--text-color)]">

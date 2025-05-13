@@ -1,15 +1,13 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
 
 const ListItem = ({ list, updateList, deleteList, selectList }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(list.name);
-  const [newDueDate, setNewDueDate] = useState(list.dueDate || '');
   const [newColor, setNewColor] = useState(list.color || 'blue');
 
   const handleUpdate = () => {
     if (newName.trim()) {
-      updateList(list.id, newName, newDueDate, newColor);
+      updateList(list.id, newName, newColor);
       setIsEditing(false);
     }
   };
@@ -35,12 +33,7 @@ const ListItem = ({ list, updateList, deleteList, selectList }) => {
             onChange={(e) => setNewName(e.target.value)}
             className="w-full p-2 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-blue-500"
             autoFocus
-          />
-          <input
-            type="date"
-            value={newDueDate}
-            onChange={(e) => setNewDueDate(e.target.value)}
-            className="w-full p-2 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label="Edit list name"
           />
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--text-color)]">
@@ -74,11 +67,6 @@ const ListItem = ({ list, updateList, deleteList, selectList }) => {
             ></span>
             <div>
               <span className="font-medium text-lg">{list.name}</span>
-              {list.dueDate && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Due: {format(new Date(list.dueDate), 'MMM dd, yyyy')}
-                </p>
-              )}
             </div>
           </div>
           <div className="space-x-3">
@@ -86,7 +74,8 @@ const ListItem = ({ list, updateList, deleteList, selectList }) => {
               onClick={(e) => {
                 e.stopPropagation();
                 setIsEditing(true);
-              }}
+                } 
+              }
               className="btn-secondary"
             >
               Edit
@@ -95,7 +84,8 @@ const ListItem = ({ list, updateList, deleteList, selectList }) => {
               onClick={(e) => {
                 e.stopPropagation();
                 deleteList(list.id);
-              }}
+                }
+              }
               className="btn-danger"
             >
               Delete
