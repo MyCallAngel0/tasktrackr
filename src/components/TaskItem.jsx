@@ -8,7 +8,7 @@ const TaskItem = ({ task, updateTask, deleteTask, toggleComplete }) => {
 
   const handleUpdate = () => {
     if (newTitle.trim()) {
-      updateTask(task.id, newTitle, newDueDate);
+      updateTask(task._id, newTitle, newDueDate);
       setIsEditing(false);
     }
   };
@@ -21,7 +21,7 @@ const TaskItem = ({ task, updateTask, deleteTask, toggleComplete }) => {
         <input
           type="checkbox"
           checked={task.completed}
-          onChange={() => toggleComplete(task.id)}
+          onChange={() => toggleComplete(task._id)}
           className="h-5 w-5 text-blue-500 rounded focus:ring-blue-500"
           aria-label={`Mark ${task.title} as ${task.completed ? 'incomplete' : 'complete'}`}
         />
@@ -68,7 +68,7 @@ const TaskItem = ({ task, updateTask, deleteTask, toggleComplete }) => {
         </div>
       )}
       <button
-        onClick={() => deleteTask(task.id)}
+        onClick={() => deleteTask(task._id)}
         className="ml-2 btn-danger"
         aria-label={`Delete ${task.title}`}
       >
