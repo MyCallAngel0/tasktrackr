@@ -9,7 +9,7 @@ const TaskForm = ({ addTask }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (title.trim()) {
-      addTask(title, dueDate);
+      addTask(title, dueDate || null);
       setTitle('');
       setDueDate('');
       setShowDatePicker(false);

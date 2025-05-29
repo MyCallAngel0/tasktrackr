@@ -5,13 +5,6 @@ const ListItem = ({ list, updateList, deleteList, selectList }) => {
   const [newName, setNewName] = useState(list.name);
   const [newColor, setNewColor] = useState(list.color || 'blue');
 
-  const handleUpdate = () => {
-    if (newName.trim()) {
-      updateList(list.id, newName, newColor);
-      setIsEditing(false);
-    }
-  };
-
   const colors = [
     { name: 'Blue', value: 'blue', bg: 'bg-blue-500' },
     { name: 'Red', value: 'red', bg: 'bg-red-500' },
@@ -20,10 +13,31 @@ const ListItem = ({ list, updateList, deleteList, selectList }) => {
     { name: 'Orange', value: 'orange', bg: 'bg-orange-500' },
   ];
 
+  const handleUpdate = () => {
+    if (newName.trim()) {
+      updateList(list._id, newName, newColor);
+      setIsEditing(false);
+    }
+  };
+
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    if (window.confirm(`Delete ${list.name} and its tasks?`)) {
+      deleteList(list._id);
+    }
+  };
+
+  const handleSelect = () => {
+    selectList(list._id);
+  };
+
+  // Fallback to blue
+  const colorValue = colors.some((c) => c.value === list.color) ? list.color : 'blue';
+
   return (
     <li
-      className={`card p-4 mb-4 cursor-pointer ${list.color ? `color-${list.color}` : 'color-blue'}`}
-      onClick={() => selectList(list.id)}
+      className={`card p-4 mb-4 cursor-pointer color-${colorValue}`}
+      onClick={handleSelect}
     >
       {isEditing ? (
         <div className="space-y-3">
@@ -63,10 +77,11 @@ const ListItem = ({ list, updateList, deleteList, selectList }) => {
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <span
-              className={`w-3 h-3 rounded-full color-dot-${list.color || 'blue'}`}
+              className={`w-3 h-3 rounded-full color-dot-${colorValue}`}
+              aria-hidden="true"
             ></span>
             <div>
-              <span className="font-medium text-lg">{list.name}</span>
+              <span className="font-medium text-lg text-[var(--text-color)]">{list.name}</span>
             </div>
           </div>
           <div className="space-x-3">
@@ -74,19 +89,16 @@ const ListItem = ({ list, updateList, deleteList, selectList }) => {
               onClick={(e) => {
                 e.stopPropagation();
                 setIsEditing(true);
-                } 
-              }
+              }}
               className="btn-secondary"
+              aria-label={`Edit ${list.name}`}
             >
               Edit
             </button>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                deleteList(list.id);
-                }
-              }
+              onClick={handleDelete}
               className="btn-danger"
+              aria-label={`Delete ${list.name}`}
             >
               Delete
             </button>

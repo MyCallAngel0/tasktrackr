@@ -1,34 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 
 const AddListModal = ({ isOpen, closeModal, addList }) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState('blue');
-  const modalRef = useRef(null);
-  const nameInputRef = useRef(null);
 
-  useEffect(() => {
-    if (isOpen && nameInputRef.current) {
-      nameInputRef.current.focus();
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        closeModal();
-      }
-    };
-    if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [isOpen, closeModal]);
-
-  const handleClickOutside = (e) => {
-    if (modalRef.current && !modalRef.current.contains(e.target)) {
-      closeModal();
-    }
-  };
+  const colors = [
+    { name: 'Blue', value: 'blue', bg: 'bg-blue-500' },
+    { name: 'Red', value: 'red', bg: 'bg-red-500' },
+    { name: 'Green', value: 'green', bg: 'bg-green-500' },
+    { name: 'Purple', value: 'purple', bg: 'bg-purple-500' },
+    { name: 'Orange', value: 'orange', bg: 'bg-orange-500' },
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -40,26 +22,12 @@ const AddListModal = ({ isOpen, closeModal, addList }) => {
     }
   };
 
-  const colors = [
-    { name: 'Blue', value: 'blue', bg: 'bg-blue-500' },
-    { name: 'Red', value: 'red', bg: 'bg-red-500' },
-    { name: 'Green', value: 'green', bg: 'bg-green-500' },
-    { name: 'Purple', value: 'purple', bg: 'bg-purple-500' },
-    { name: 'Orange', value: 'orange', bg: 'bg-orange-500' },
-  ];
-
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      onClick={handleClickOutside}
-    >
-      <div
-        ref={modalRef}
-        className="card p-6 w-full max-w-md transform scale-95 animate-scale-up"
-      >
-        <h2 className="text-xl font-semibold mb-4 text-[var(--text-color)]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="card p-6 w-full max-w-md">
+        <h2 className="text-2xl font-semibold mb-4 text-[var(--text-color)]">
           New List
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -67,9 +35,8 @@ const AddListModal = ({ isOpen, closeModal, addList }) => {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="List Name"
+            placeholder="List name"
             className="w-full p-3 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--text-color)] focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ref={nameInputRef}
             aria-label="List name"
           />
           <div className="space-y-2">
@@ -94,7 +61,7 @@ const AddListModal = ({ isOpen, closeModal, addList }) => {
           </div>
           <div className="flex space-x-3">
             <button type="submit" className="btn-primary flex-1">
-              Add List
+              Add
             </button>
             <button
               type="button"

@@ -109,6 +109,11 @@ body {
   background-color: #f97316;
 }
 
+.admin-panel {
+  z-index: 100;
+  display: block;
+}
+
 @keyframes scale-up {
   from {
     transform: scale(0.95);
